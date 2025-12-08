@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Quadratic Funding DAO — match community donations to public-good proposals" />
+  <meta name="theme-color" content="#071226" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: '#6200EE',
+            'primary-variant': '#3700B3',
+            secondary: '#03DAC6',
+            'secondary-variant': '#018786',
+            background: '#0b1020', // Darker web3 background
+            surface: '#1E1E1E',
+            'neon-cyan': '#00E5FF',
+            'neon-mint': '#00FFA3',
+            'neon-purple': '#A855F7',
+          },
+          boxShadow: {
+            'glow': '0 0 14px rgba(99,102,241,0.6)',
+            'glow-soft': '0 0 20px rgba(99,102,241,0.3)',
+          }
+        }
+      }
+    }
+  </script>
+  <title>Quadratic Funding DAO — Frontend</title>
+  <!-- Open Graph / SEO -->
+  <meta property="og:title" content="Quadratic Funding DAO" />
+  <meta property="og:description"
+    content="Match community donations to public-good proposals via quadratic funding rounds." />
+  <meta property="og:type" content="website" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>
