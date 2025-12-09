@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { createConfig, http, WagmiProvider } from 'wagmi'
+import { createConfig, WagmiProvider } from 'wagmi'
+import { http } from 'viem'
 import { mainnet, sepolia } from 'wagmi/chains'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
