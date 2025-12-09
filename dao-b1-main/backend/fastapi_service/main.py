@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -9,6 +9,7 @@ import os
 import asyncio
 import strawberry
 from strawberry.fastapi import GraphQLRouter
+from jsonrpcserver import method, async_dispatch as dispatch
 
 
 logger = logging.getLogger("fastapi_service")
@@ -69,9 +70,6 @@ async def admin_resolve(req: ResolveRequest, authorized: bool = Depends(admin_to
     return {"ok": True, "id": req.id, "action": req.action}
 
 
-# JSON-RPC stub
-from jsonrpcserver import method, async_dispatch as dispatch
-from fastapi import Request
 
 
 @method

@@ -7,7 +7,6 @@ import json
 import logging
 import time
 import sys
-import uuid
 from web3 import Web3
 from db import get_session
 from models import Transaction
@@ -48,7 +47,6 @@ def backfill(w3, contract, from_block, to_block):
                     continue
                 args = ev['args']
                 amount = args.get('amount', 0)
-                trace_id = uuid.uuid4().hex
                 t = Transaction(tx_hash=tx_hash, user_id=1, project_id=args.get('projectId'), amount=Web3.fromWei(amount, 'ether'))
                 s.add(t)
                 persisted += 1

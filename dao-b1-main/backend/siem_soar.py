@@ -8,9 +8,8 @@ import logging
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
 from enum import Enum
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from typing import List, Dict, Optional
-import hashlib
 
 # Configure logging
 logging.basicConfig(
@@ -256,13 +255,13 @@ class ThreatModelRegistry:
             lines.append(f"**Description:** {threat.description}\n")
             lines.append(f"**Likelihood:** {threat.likelihood}/5 | **Impact:** {threat.impact}/5 | **Risk:** {threat.risk_score}/25\n")
             lines.append(f"**Owner:** {threat.owner}\n")
-            lines.append(f"\n### Mitigations\n")
+            lines.append("\n### Mitigations\n")
             for mit in threat.mitigations:
                 lines.append(f"- {mit}\n")
-            lines.append(f"\n### Detection Rules\n")
+            lines.append("\n### Detection Rules\n")
             for rule in threat.detection_rules:
                 lines.append(f"- {rule}\n")
-            lines.append(f"\n### Response Playbook\n")
+            lines.append("\n### Response Playbook\n")
             lines.append(f"```\n{threat.response_playbook.strip()}\n```\n")
             lines.append("\n---\n\n")
         

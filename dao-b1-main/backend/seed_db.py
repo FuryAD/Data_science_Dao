@@ -3,7 +3,7 @@
 Run: python seed_db.py
 """
 from db import create_tables, engine
-from models import Base, User, Project, Transaction, Tag, Milestone, ProjectTag
+from models import Base, User, Project, Transaction, Tag, Milestone
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 

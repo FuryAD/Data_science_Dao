@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import Navbar from '../../components/Navbar'
-import Footer from '../../components/Footer'
+import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { z } from 'zod'
 import { useToast } from '../../components/ui/Toast'
 
@@ -77,8 +76,7 @@ export default function SubmitProjectPage() {
   }
 
   return (
-    <>
-      <Navbar />
+    <ProtectedRoute>
       <main className="min-h-screen bg-gradient-to-b from-dark-bg via-dark-bg to-dark-surface pt-32 pb-20">
         <div className="container-main max-w-3xl">
           {submitted ? (
@@ -209,7 +207,6 @@ export default function SubmitProjectPage() {
           )}
         </div>
       </main>
-      <Footer />
-    </>
+    </ProtectedRoute>
   )
 }

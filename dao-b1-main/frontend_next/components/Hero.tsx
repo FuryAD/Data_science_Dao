@@ -1,9 +1,13 @@
 'use client'
 
-import React, { Suspense, lazy } from 'react'
+import React, { Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 
-const Orb = lazy(() => import('./orb'))
+const Orb = dynamic(() => import('./orb'), {
+  loading: () => <div className="w-full h-full bg-gradient-to-br from-neon-purple/10 to-neon-cyan/10 rounded-full animate-pulse" />,
+  ssr: false,
+})
 
 const STATS = [
   { value: '$12.4M', label: 'Total Funded' },
@@ -71,9 +75,7 @@ export default function Hero() {
             <div className="relative w-full h-full flex items-center justify-center">
               <div className="absolute inset-0 z-0 flex items-center justify-center">
                 <div className="w-[400px] h-[400px]">
-                  <Suspense fallback={<div className="w-full h-full bg-gradient-to-br from-neon-purple/10 to-neon-cyan/10 rounded-full animate-pulse" />}>
-                    <Orb />
-                  </Suspense>
+                  <Orb />
                 </div>
               </div>
 

@@ -3,14 +3,12 @@ Sprint 3: Monitoring & Metrics Module
 Tracks KPIs, alerts, and operational health
 """
 
-import time
 import json
-from datetime import datetime
-from collections import deque, defaultdict
+from datetime import datetime, timezone
+from collections import deque
 from threading import Lock
 from enum import Enum
 
-import numpy as np
 from prometheus_client import Counter, Gauge, Histogram, generate_latest, CollectorRegistry
 
 
@@ -44,58 +42,76 @@ class KPITracker:
     def update_event_lag(self, lag_seconds):
         """Update event processing lag KPI"""
         with self.lock:
-            self.event_processing_lag.append(lag_seconds)
+            try:
+                self.event_processing_lag.append(float(lag_seconds))
+            except Exception:
+                self.event_processing_lag.append(0.0)
+            self.last_update = datetime.now()
     
     def update_error_rate(self, error_count, total_count):
         """Update error rate KPI"""
         with self.lock:
-            error_pct = (error_count / total_count * 100) if total_count > 0 else 0
-            self.error_rate.append(error_pct)
+            try:
+                total = max(int(total_count), 1)
+                rate = (int(error_count) / total) * 100.0
+                self.error_rate.append(float(rate))
+            except Exception:
+                self.error_rate.append(0.0)
+            self.last_update = datetime.now()
+            # note: previous accidental duplicate append removed
     
     def update_latency(self, latency_ms):
         """Update API response latency"""
         with self.lock:
-            self.api_response_latency.append(latency_ms)
+            try:
+                self.api_response_latency.append(float(latency_ms))
+            except Exception:
+                self.api_response_latency.append(0.0)
+            self.last_update = datetime.now()
     
     def update_suspicious_count(self, count):
         """Update count of flagged suspicious transactions"""
         with self.lock:
-            self.suspicious_transactions_flagged.append(count)
+            try:
+                self.suspicious_transactions_flagged.append(int(count))
+            except Exception:
+                self.suspicious_transactions_flagged.append(0)
+            self.last_update = datetime.now()
     
     def update_conversion_rate(self, converted, total):
         """Update conversion rate KPI"""
         with self.lock:
-            conv_pct = (converted / total * 100) if total > 0 else 0
-            self.conversion_rate.append(conv_pct)
+            try:
+                total = max(int(total), 1)
+                rate = (int(converted) / total) * 100.0
+                self.conversion_rate.append(float(rate))
+            except Exception:
+                self.conversion_rate.append(0.0)
+            self.last_update = datetime.now()
+            # note: previous accidental duplicate append removed
     
     def get_summary(self):
         """Get KPI summary statistics"""
         with self.lock:
+            def _stats(dq):
+                if not dq:
+                    return {'current': None, 'min': None, 'max': None, 'avg': None}
+                vals = list(dq)
+                return {
+                    'current': vals[-1],
+                    'min': min(vals),
+                    'max': max(vals),
+                    'avg': sum(vals) / len(vals)
+                }
+
             return {
-                'timestamp': datetime.now().isoformat(),
-                'event_processing_lag': {
-                    'mean': np.mean(self.event_processing_lag) if self.event_processing_lag else 0,
-                    'max': max(self.event_processing_lag) if self.event_processing_lag else 0,
-                    'current': self.event_processing_lag[-1] if self.event_processing_lag else 0,
-                },
-                'error_rate': {
-                    'mean': np.mean(self.error_rate) if self.error_rate else 0,
-                    'max': max(self.error_rate) if self.error_rate else 0,
-                    'current': self.error_rate[-1] if self.error_rate else 0,
-                },
-                'api_response_latency': {
-                    'mean': np.mean(self.api_response_latency) if self.api_response_latency else 0,
-                    'p95': np.percentile(self.api_response_latency, 95) if self.api_response_latency else 0,
-                    'p99': np.percentile(self.api_response_latency, 99) if self.api_response_latency else 0,
-                },
-                'suspicious_transactions_flagged': {
-                    'current': self.suspicious_transactions_flagged[-1] if self.suspicious_transactions_flagged else 0,
-                    'total': sum(self.suspicious_transactions_flagged),
-                },
-                'conversion_rate': {
-                    'mean': np.mean(self.conversion_rate) if self.conversion_rate else 0,
-                    'current': self.conversion_rate[-1] if self.conversion_rate else 0,
-                },
+                'event_processing_lag': _stats(self.event_processing_lag),
+                'error_rate': _stats(self.error_rate),
+                'api_response_latency': _stats(self.api_response_latency),
+                'suspicious_transactions_flagged': _stats(self.suspicious_transactions_flagged),
+                'conversion_rate': _stats(self.conversion_rate),
+                'transaction_success_rate': _stats(self.transaction_success_rate),
+                'last_update': self.last_update.isoformat()
             }
 
 
@@ -116,18 +132,22 @@ class AlertManager:
     
     def check_and_alert(self, kpi_name, value, threshold):
         """Check if value exceeds threshold and create alert"""
-        if value > threshold:
-            alert = {
-                'timestamp': datetime.now().isoformat(),
-                'kpi': kpi_name,
-                'value': value,
-                'threshold': threshold,
-                'severity': AlertSeverity.CRITICAL.name,
-                'message': f"{kpi_name} exceeded threshold: {value:.2f} > {threshold:.2f}"
-            }
-            with self.lock:
-                self.alerts.append(alert)
-            return alert
+        try:
+            if value is None:
+                return None
+            if float(value) > float(threshold):
+                alert = {
+                    'timestamp': datetime.now(timezone.utc).isoformat(),
+                    'kpi': kpi_name,
+                    'value': float(value),
+                    'threshold': float(threshold),
+                    'severity': AlertSeverity.CRITICAL.name,
+                }
+                with self.lock:
+                    self.alerts.append(alert)
+                return alert
+        except Exception:
+            return None
         return None
     
     def get_recent_alerts(self, limit=100):
@@ -188,8 +208,8 @@ class MetricsCollector:
         )
     
     def export_metrics(self):
-        """Export metrics in Prometheus format"""
-        return generate_latest(self.registry).decode('utf-8')
+        # Return Prometheus exposition format bytes
+        return generate_latest(self.registry)
 
 
 metrics_collector = MetricsCollector()
@@ -200,18 +220,18 @@ class ModelInferenceLogger:
     """Log all model inferences for tracing and audit"""
     
     def __init__(self, max_entries=10000):
+        self.max_entries = max_entries
         self.lock = Lock()
         self.logs = deque(maxlen=max_entries)
     
     def log_inference(self, model_name, features_dict, prediction, score, latency_ms):
-        """Log model inference"""
         entry = {
-            'timestamp': datetime.now().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'model_name': model_name,
-            'input_features': features_dict,
+            'features': features_dict,
             'prediction': prediction,
-            'score': score,
-            'latency_ms': latency_ms,
+            'score': float(score),
+            'latency_ms': float(latency_ms)
         }
         with self.lock:
             self.logs.append(entry)
@@ -219,10 +239,10 @@ class ModelInferenceLogger:
     def get_recent_inferences(self, model_name=None, limit=100):
         """Get recent inferences"""
         with self.lock:
-            logs = list(self.logs)
-            if model_name:
-                logs = [l for l in logs if l['model_name'] == model_name]
-            return logs[-limit:]
+            items = list(self.logs)
+        if model_name:
+            items = [i for i in items if i.get('model_name') == model_name]
+        return items[-limit:]
 
 
 inference_logger = ModelInferenceLogger()
@@ -243,7 +263,7 @@ if __name__ == '__main__':
         alert_manager.thresholds['event_processing_lag_critical']
     )
     if alert:
-        print(f"🚨 ALERT: {alert['message']}")
+        print(f"🚨 ALERT: {alert}")
     
     # Get KPI summary
     print("\nKPI Summary:")

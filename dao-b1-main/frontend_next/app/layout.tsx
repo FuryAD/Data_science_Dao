@@ -1,10 +1,6 @@
 import type { Metadata } from 'next'
 import '../styles/globals.css'
-import { ThemeProvider } from '../components/ThemeProvider'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
-import { Web3Provider } from '../providers/Web3Provider'
-import { ToastProvider } from '../components/ui/Toast'
+import { RootLayoutClient } from './RootLayoutClient'
 
 export const metadata: Metadata = {
   title: 'Quadratic Funding DAO | Web3 Public Goods',
@@ -45,17 +41,9 @@ export default function RootLayout({
         <link rel="prefetch" href="/submit" />
       </head>
       <body className="bg-white dark:bg-dark-bg text-black dark:text-white overflow-x-hidden transition-colors h-full">
-        <Web3Provider>
-          <ThemeProvider>
-            <ToastProvider>
-              <Navbar />
-              <main className="min-h-screen">
-                {children}
-              </main>
-              <Footer />
-            </ToastProvider>
-          </ThemeProvider>
-        </Web3Provider>
+        <RootLayoutClient>
+          {children}
+        </RootLayoutClient>
       </body>
     </html>
   )

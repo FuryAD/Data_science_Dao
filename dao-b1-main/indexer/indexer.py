@@ -10,8 +10,8 @@ import sys
 import uuid
 from web3 import Web3
 from sqlalchemy import select
-from db import get_session, engine
-from models import Transaction, Project, User
+from db import get_session
+from models import Transaction
 from prometheus_client import Counter, Histogram, Gauge, start_http_server
 from pythonjsonlogger import jsonlogger
 

@@ -5,7 +5,6 @@ Normalized to avoid multivalued dependencies. Primary keys and FKs included.
 from sqlalchemy import (
     Column,
     Integer,
-    BigInteger,
     String,
     DateTime,
     ForeignKey,

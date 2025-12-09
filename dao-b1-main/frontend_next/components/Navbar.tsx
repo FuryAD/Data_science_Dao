@@ -2,27 +2,26 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-
-const NAV_ITEMS = [
-  { label: 'Home', href: '/' },
-  { label: 'Projects', href: '/projects' },
-  { label: 'Rounds', href: '/rounds' },
-  { label: 'Submit Proposal', href: '/submit' },
-]
+import { useAuth } from '@/hooks/useAuth'
+import { useAccount, useDisconnect } from 'wagmi'
+import WalletConnect from './WalletConnect'
+import { Menu, X } from 'lucide-react'
 
 export default function Navbar() {
-  const [isConnected, setIsConnected] = useState(false)
-  const [address, setAddress] = useState('')
+  const { isAuthenticated, isAdmin } = useAuth()
+  const { address, isConnected } = useAccount()
+  const { disconnect } = useDisconnect()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  const handleWalletConnect = () => {
-    setIsConnected(true)
-    setAddress('0x742d35Cc6634C0532925a3b844Bc9e7595f42bE')
+  const handleLoginClick = () => {
+    const event = new CustomEvent('openAuthModal')
+    window.dispatchEvent(event)
   }
 
-  const handleWalletDisconnect = () => {
-    setIsConnected(false)
-    setAddress('')
+  const handleDisconnect = () => {
+    disconnect()
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('userRole')
   }
 
   return (
@@ -42,78 +41,195 @@ export default function Navbar() {
 
           {/* Desktop Nav Links */}
           <div className="hidden lg:flex items-center gap-x-8">
-            {NAV_ITEMS.map((item) => (
+            {/* Public Links - Always Visible */}
+            <Link
+              href="/"
+              className="nav-link text-sm tracking-wide hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-400 transition-all duration-300"
+            >
+              Home
+            </Link>
+            <Link
+              href="/projects"
+              className="nav-link text-sm tracking-wide hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-400 transition-all duration-300"
+            >
+              Projects
+            </Link>
+            <Link
+              href="/rounds"
+              className="nav-link text-sm tracking-wide hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-400 transition-all duration-300"
+            >
+              Rounds
+            </Link>
+
+            {/* Submit Proposal - Shows Login Modal if Not Auth */}
+            {isAuthenticated ? (
               <Link
-                key={item.label}
-                href={item.href}
+                href="/submit"
                 className="nav-link text-sm tracking-wide hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-400 transition-all duration-300"
               >
-                {item.label}
+                Submit Proposal
               </Link>
-            ))}
-          </div>
-
-          {/* Wallet Button */}
-          <div className="flex items-center gap-3">
-            {isConnected ? (
-              <button
-                onClick={handleWalletDisconnect}
-                className="hidden md:inline-flex px-6 py-2.5 rounded-xl font-medium text-sm transition-all border border-white/10 bg-white/5 backdrop-blur-md text-white hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full animate-pulse bg-neon-mint"></span>
-                  {address.slice(0, 6)}...{address.slice(-4)}
-                </span>
-              </button>
             ) : (
-              <Link
-                href="/wallet"
-                className="hidden md:inline-flex items-center justify-center px-8 py-3 rounded-xl font-bold text-white transition-all duration-300 bg-gradient-to-r from-indigo-600 via-purple-600 to-neon-purple hover:scale-105 hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] active:scale-95 border border-white/10"
+              <button
+                onClick={handleLoginClick}
+                className="nav-link text-sm tracking-wide hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-400 transition-all duration-300"
               >
-                Connect Wallet
-              </Link>
+                Submit Proposal
+              </button>
             )}
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2 rounded-lg transition-all text-white hover:bg-white/10"
-              aria-label="Toggle menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
+            {/* User Dashboard - Auth Required */}
+            {isAuthenticated && (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="nav-link text-sm tracking-wide hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-green-400 hover:to-cyan-400 transition-all duration-300"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/wallet"
+                  className="nav-link text-sm tracking-wide hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-green-400 hover:to-cyan-400 transition-all duration-300"
+                >
+                  Profile
+                </Link>
+              </>
+            )}
+
+            {/* Admin Links - Admin Only */}
+            {isAdmin && (
+              <>
+                <Link
+                  href="/admin"
+                  className="nav-link text-sm tracking-wide text-orange-400 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-orange-400 hover:to-red-400 transition-all duration-300 font-semibold"
+                >
+                  Admin Dashboard
+                </Link>
+                <Link
+                  href="/admin/rounds"
+                  className="nav-link text-sm tracking-wide text-orange-400 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-orange-400 hover:to-red-400 transition-all duration-300"
+                >
+                  Round Manager
+                </Link>
+                <Link
+                  href="/governance"
+                  className="nav-link text-sm tracking-wide text-orange-400 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-orange-400 hover:to-red-400 transition-all duration-300"
+                >
+                  Governance
+                </Link>
+              </>
+            )}
           </div>
+
+          {/* Right Side - Auth & Wallet */}
+          <div className="hidden lg:flex items-center gap-4">
+            {isConnected && isAuthenticated ? (
+              <button
+                onClick={handleDisconnect}
+                className="px-4 py-2 rounded-full text-red-400 border border-red-400 hover:bg-red-400/10 transition-all duration-300 text-sm font-medium"
+              >
+                Disconnect
+              </button>
+            ) : (
+              <>
+                {!isConnected && <WalletConnect />}
+                {!isAuthenticated && (
+                  <button
+                    onClick={handleLoginClick}
+                    className="px-6 py-2 rounded-full bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-semibold hover:shadow-lg transition-all duration-300 text-sm"
+                  >
+                    Login
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden text-white">
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden border-t border-white/10 bg-dark-bg/95 backdrop-blur-xl">
-            <div className="container mx-auto px-6 py-4 flex flex-col gap-4">
-              {NAV_ITEMS.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="text-gray-300 hover:text-white font-medium py-2 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.label}
+          <div className="lg:hidden border-t border-white/10 bg-dark-bg/95 backdrop-blur">
+            <div className="container-main py-4 space-y-4">
+              {/* Public Links */}
+              <Link href="/" className="block text-gray-300 hover:text-white transition py-2">
+                Home
+              </Link>
+              <Link href="/projects" className="block text-gray-300 hover:text-white transition py-2">
+                Projects
+              </Link>
+              <Link href="/rounds" className="block text-gray-300 hover:text-white transition py-2">
+                Rounds
+              </Link>
+
+              {/* Submit Proposal */}
+              {isAuthenticated ? (
+                <Link href="/submit" className="block text-gray-300 hover:text-white transition py-2">
+                  Submit Proposal
                 </Link>
-              ))}
-              {!isConnected && (
-                <Link
-                  href="/wallet"
-                  className="btn-premium w-full py-3 mt-2 text-center"
-                  onClick={() => setIsMenuOpen(false)}
+              ) : (
+                <button
+                  onClick={handleLoginClick}
+                  className="block text-gray-300 hover:text-white transition py-2 w-full text-left"
                 >
-                  Connect Wallet
-                </Link>
+                  Submit Proposal
+                </button>
               )}
+
+              {/* User Links */}
+              {isAuthenticated && (
+                <>
+                  <Link href="/dashboard" className="block text-green-400 hover:text-green-300 transition py-2">
+                    Dashboard
+                  </Link>
+                  <Link href="/wallet" className="block text-green-400 hover:text-green-300 transition py-2">
+                    Profile
+                  </Link>
+                </>
+              )}
+
+              {/* Admin Links */}
+              {isAdmin && (
+                <>
+                  <Link href="/admin" className="block text-orange-400 hover:text-orange-300 transition py-2 font-semibold">
+                    Admin Dashboard
+                  </Link>
+                  <Link href="/admin/rounds" className="block text-orange-400 hover:text-orange-300 transition py-2">
+                    Round Manager
+                  </Link>
+                  <Link href="/governance" className="block text-orange-400 hover:text-orange-300 transition py-2">
+                    Governance
+                  </Link>
+                </>
+              )}
+
+              {/* Auth Actions */}
+              <div className="pt-4 space-y-2 border-t border-white/10">
+                {isConnected && isAuthenticated ? (
+                  <button
+                    onClick={handleDisconnect}
+                    className="w-full px-4 py-2 rounded-full text-red-400 border border-red-400 hover:bg-red-400/10 transition-all duration-300 text-sm font-medium"
+                  >
+                    Disconnect Wallet
+                  </button>
+                ) : (
+                  <>
+                    {!isConnected && <WalletConnect />}
+                    {!isAuthenticated && (
+                      <button
+                        onClick={handleLoginClick}
+                        className="w-full px-6 py-2 rounded-full bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-semibold hover:shadow-lg transition-all duration-300 text-sm"
+                      >
+                        Login
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -121,4 +237,3 @@ export default function Navbar() {
     </header>
   )
 }
-

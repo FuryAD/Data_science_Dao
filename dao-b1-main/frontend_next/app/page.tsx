@@ -1,4 +1,5 @@
-import Navbar from '../components/Navbar'
+'use client'
+
 import Hero from '../components/Hero'
 import FeatureSection from '../components/FeatureSection'
 import ProjectGrid from '../components/ProjectGrid'
@@ -7,8 +8,6 @@ import CountUp from '../components/CountUp'
 export default function Home() {
   return (
     <>
-      <Navbar />
-
       <div className="overflow-hidden">
         {/* Hero Section */}
         <section className="relative min-h-screen pt-32 md:pt-40 pb-12 md:pb-24">

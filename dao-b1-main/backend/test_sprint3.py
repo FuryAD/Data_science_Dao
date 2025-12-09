@@ -6,7 +6,7 @@ End-to-end tests for model inference, monitoring, and security controls
 import pytest
 from datetime import datetime, timedelta
 
-from monitoring import kpi_tracker, alert_manager, inference_logger, MetricsCollector
+from monitoring import kpi_tracker, alert_manager, inference_logger
 from siem_soar import EventCorrelator, ThreatModelRegistry, SecurityEvent, SeverityLevel
 from inference import ModelInferencePipeline, score_user_for_ui_personalization, score_transaction_for_gating
 
@@ -157,7 +157,7 @@ class TestModelInference:
         
         decision = score_transaction_for_gating(456, {**features, 'tx_id': 'tx_456'})
         
-        assert decision['requires_additional_verification'] == True
+        assert decision['requires_additional_verification']
         if decision['action'] == 'block':
             assert 'block_reason' in decision
 

@@ -4,7 +4,6 @@ Consumes ETL features and outputs model decisions integrated into backend flow
 """
 
 import time
-from datetime import datetime
 from typing import Dict, Tuple, Any, List
 import logging
 
@@ -91,14 +90,14 @@ class ModelInferencePipeline:
         is_anomaly = suspicious_ratio > 0.3 or amount_volatility > 2.0
         
         latency_ms = (time.time() - start_time) * 1000
-        
+
         details = {
             'is_anomaly': int(is_anomaly),
             'suspicious_ratio': suspicious_ratio,
             'amount_volatility': amount_volatility,
-            'reasons': []
+            'reasons': [],
+            'latency_ms': latency_ms
         }
-        
         if suspicious_ratio > 0.3:
             details['reasons'].append(f"High suspicious transaction ratio: {suspicious_ratio:.2%}")
         if amount_volatility > 2.0:
