@@ -31,6 +31,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Custom logging middleware
+    'logging_middleware.RequestLoggingMiddleware',
+    'logging_middleware.DatabaseQueryLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'backend_project.urls'
